@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 # required for IN_LIST on "old" versions of cmake
 cmake_policy(SET CMP0057 NEW)

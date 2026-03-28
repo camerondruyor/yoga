@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 get_git_version(GIT_DATE GIT_COMMIT_SHA)
 set(T_INFINITY_VERSION ${GIT_DATE}-${GIT_COMMIT_SHA})

@@ -24,7 +24,8 @@ class NanoFlannDistanceCalculator {
 
     double calcDistance(const Parfait::Point<double>& p,int component){
         auto& tree = trees[component];
-        return std::sqrt(getSquaredDistance(*tree, p));
+        auto& cloud = *point_clouds[component];
+        return std::sqrt(getSquaredDistance(*tree, cloud, p));
     }
 
     std::vector<double> calculateDistances(const std::vector<Parfait::Point<double>>& points,
@@ -33,8 +34,9 @@ class NanoFlannDistanceCalculator {
         for(size_t i=0;i<points.size();i++) {
             int component = grid_ids_for_nodes[i];
             auto& tree = trees[component];
+            auto& cloud = *point_clouds[component];
             auto& p = points[i];
-            distance[i] = std::sqrt(getSquaredDistance(*tree, p));
+            distance[i] = std::sqrt(getSquaredDistance(*tree, cloud, p));
         }
         return distance;
     }
@@ -50,8 +52,8 @@ class NanoFlannDistanceCalculator {
     std::vector<std::shared_ptr<PointCloudAdapter>> point_clouds;
     std::vector<std::shared_ptr<nano_flann_kd_tree>> trees;
 
-    double getSquaredDistance(const nano_flann_kd_tree& tree,const Parfait::Point<double>& p){
-        if(tree.dataset.kdtree_get_point_count() == 0){
+    double getSquaredDistance(const nano_flann_kd_tree& tree, const PointCloudAdapter& cloud, const Parfait::Point<double>& p){
+        if(cloud.kdtree_get_point_count() == 0){
             return MAX_DISTANCE;
         }
         const size_t num_results = 1;
@@ -59,7 +61,7 @@ class NanoFlannDistanceCalculator {
         double out_dist_sqr;
         nanoflann::KNNResultSet<double> resultSet(num_results);
         resultSet.init(&ret_index, &out_dist_sqr);
-        tree.findNeighbors(resultSet, p.data(), nanoflann::SearchParams());
+        tree.findNeighbors(resultSet, p.data(), nanoflann::SearchParameters());
         return out_dist_sqr;
     }
 

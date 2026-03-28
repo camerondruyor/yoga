@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(yoga)
 set (CMAKE_CXX_STANDARD 14)
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
@@ -20,7 +20,14 @@ add_definitions(
      )
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-find_package(nanoflann REQUIRED)
+include(FetchContent)
+FetchContent_Declare(
+    nanoflann
+    GIT_REPOSITORY https://github.com/jlblancoc/nanoflann.git
+    GIT_TAG        v1.6.2
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(nanoflann)
 find_package(tracer REQUIRED)
 find_package(MessagePasser REQUIRED)
 find_package(parfait REQUIRED)
