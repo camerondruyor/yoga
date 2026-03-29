@@ -10,6 +10,7 @@ set(SOURCES
         BandwidthReducer.cpp
         BetterDistanceCalculator.cpp
         CartMesh.cpp
+        NozzleMesh.cpp
         Cell.cpp
         CellIdFilter.cpp
         CellSelectedMesh.cpp
@@ -102,6 +103,7 @@ set(HEADERS
         BetterDistanceCalculator.h
         BoundaryNodes.h
         CartMesh.h
+        NozzleMesh.h
         Cell.h
         CellIdFilter.h
         CellSelectedMesh.h

@@ -6,6 +6,7 @@ set(UNIT_TEST_SRC
         BetterDistanceCalculatorTests.cpp
         BoundaryNodesTests.cpp
         CartMeshTests.cpp
+        NozzleMeshTests.cpp
         CellCollapseTests.cpp
         CellTests.cpp
         CellSelectedMeshTests.cpp
