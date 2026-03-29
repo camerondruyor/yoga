@@ -103,7 +103,7 @@ class SU2Reader : public Reader {
             p[0] = toDouble(words[0]);
             p[1] = toDouble(words[1]);
             if (dimension == 3) {
-                p[0] = toDouble(words[2]);
+                p[2] = toDouble(words[2]);
             }
             points[node_index++] = p;
         }
