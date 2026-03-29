@@ -53,6 +53,7 @@ endfunction()
 
 function(add_catch_unit_test TARGET_NAME SOURCE_FILES)
     if (RING_BUILD_TESTING)
+        find_package(Catch2 3 REQUIRED)
         find_package(CatchTestRunners REQUIRED)
         set(_UNIT_SOURCES ${SOURCE_FILES} ${ARGN})
         add_executable(${TARGET_NAME} ${_UNIT_SOURCES})
