@@ -180,9 +180,8 @@ class SU2Reader : public Reader {
                 continue;
             }
             if (contains(l, keyword)) {
-                auto line = findAndReplace(l, "=", " ");
+                auto line = findAndReplace(findAndReplace(l, "=", " "), "\t", " ");
                 auto words = split(line, " ");
-                PARFAIT_ASSERT(words.size() == 2, "Expected keyword line to have 2 words");
                 PARFAIT_ASSERT(words[0] == keyword, "Encountered unexpected word on line:\n" + line);
                 current_line_index++;
                 return strip(words[1]);
