@@ -12,6 +12,10 @@ class MetricDecomposition {
 
     static Decomposition decompose(const DenseMatrix<double, 3, 3>& M);
 
+    // Analytical eigendecomposition using Cardano's method + cross-product
+    // eigenvectors.  Always succeeds for any symmetric 3×3 matrix — no iteration.
+    static Decomposition decomposeRobust(const DenseMatrix<double, 3, 3>& M);
+
     static DenseMatrix<double, 3, 3> recompose(const Decomposition& d);
 
     static double calcTargetError(const DenseMatrix<double, 3, 3>& M);
