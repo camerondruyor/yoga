@@ -22,7 +22,7 @@
     }
 #define PARFAIT_EXIT(message)                                                                         \
     {                                                                                                 \
-        std::cerr << u8"\n\u2757ERROR:\n"                                                             \
+        std::cerr << "\n\u2757ERROR:\n"                                                             \
                   << std::string(message) + "\n at file: " + std::string(__FILE__) +                  \
                          " function: " + std::string(__func__) + " line: " + std::to_string(__LINE__) \
                   << std::endl;                                                                       \
@@ -30,7 +30,7 @@
     }
 #define PARFAIT_WARNING(message)                                                                      \
     {                                                                                                 \
-        std::cerr << u8"\n\u2757WARNING: \n"                                                          \
+        std::cerr << "\n\u2757WARNING: \n"                                                          \
                   << std::string(message) + "\n at file: " + std::string(__FILE__) +                  \
                          " function: " + std::string(__func__) + " line: " + std::to_string(__LINE__) \
                   << std::endl;                                                                       \
