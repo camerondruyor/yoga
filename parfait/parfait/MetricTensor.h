@@ -101,7 +101,7 @@ class MetricTensor {
     }
 
     static Tensor invert(const Tensor& M) {
-        auto d = MetricDecomposition::decompose(M);
+        auto d = MetricDecomposition::decomposeRobust(M);
         for (int i = 0; i < 3; i++) d.D(i, i) = 1.0 / d.D(i, i);
         return d.R * d.D * d.R.transpose();
     }
@@ -123,37 +123,60 @@ class MetricTensor {
         return e;
     }
 
-    static Tensor rayleighFormula(const Tensor& M, const Tensor& N) {
-        Tensor v = Tensor::Identity();
-        auto decomp = MetricDecomposition::decompose(N);
-        decomp.R.transposeInPlace();
-        for (int i = 0; i < 3; i++) {
-            const auto e = extractEigenvector(decomp, i);
-            v(i, i) = e.dot(M * e);
-        }
-        return v;
-    }
-
     static Tensor intersect(const Tensor& M1, const Tensor& M2) { return intersectAlauzet(M1, M2); }
 
     static Tensor intersectAlauzet(const Tensor& M1, const Tensor& M2) {
-        auto M1_inv = invert(M1);
-        auto N = M1_inv * M2;
+        // Simultaneous diagonalization in M1's eigenbasis.
+        //
+        // 1. M1 = R D R^T  (decomposeRobust)
+        // 2. M2_basis = R^T M2 R  (symmetric — M2 in M1's frame)
+        // 3. N(i,j) = M2_basis(i,j) / sqrt(D_ii * D_jj)
+        //    = D^{-1/2} M2_basis D^{-1/2} = M1^{-1/2} M2 M1^{-1/2}  (still symmetric)
+        // 4. N = Q Lambda Q^T  (decomposeRobust)
+        // 5. Intersection eigenvalues: max(1, Lambda_i)  (1 = M1's unit eigenvalue in this frame)
+        // 6. M_int = R (D^{1/2} Q) max(I,Lambda) (D^{1/2} Q)^T R^T
+        //
+        // Note: operator* returns a lazy MatrixMultiply; use Tensor (not auto) to force
+        // evaluation so temporaries don't dangle.
 
-        auto N_decomp = MetricDecomposition::decompose(N);
-        auto P = N_decomp.R;
+        auto         d1 = MetricDecomposition::decomposeRobust(M1);
+        const Tensor& R = d1.R;
+        const Tensor& D = d1.D;
 
-        auto lambdas = rayleighFormula(M1, N);
-        auto mus = rayleighFormula(M2, N);
-        Tensor L = Tensor::Identity();
-        for (int i = 0; i < 3; i++) L(i, i) = std::max(lambdas(i, i), mus(i, i));
-        return P * L * P.transpose();
+        // M2 in M1's eigenbasis: R^T M2 R  (2 matmuls)
+        Tensor Rt       = R.transpose();  // evaluated copy
+        Tensor M2_basis = Rt * M2 * R;
+
+        // N = D^{-1/2} M2_basis D^{-1/2}  (scale by diagonal — no matmul)
+        Tensor N = M2_basis;
+        for (int i = 0; i < 3; i++) {
+            double si = (D(i, i) > 0.0) ? 1.0 / std::sqrt(D(i, i)) : 0.0;
+            for (int j = 0; j < 3; j++) {
+                double sj = (D(j, j) > 0.0) ? 1.0 / std::sqrt(D(j, j)) : 0.0;
+                N(i, j) = M2_basis(i, j) * si * sj;
+            }
+        }
+
+        auto d2 = MetricDecomposition::decomposeRobust(N);
+
+        // Q_scaled = D^{1/2} Q: scale row i of Q by sqrt(D_ii)  (no matmul)
+        Tensor Q_scaled = d2.R;
+        for (int i = 0; i < 3; i++) {
+            double si = std::sqrt(std::max(D(i, i), 0.0));
+            for (int j = 0; j < 3; j++) Q_scaled(i, j) = d2.R(i, j) * si;
+        }
+
+        Tensor P    = R * Q_scaled;  // 1 matmul
+        Tensor L_int = d2.D;
+        for (int i = 0; i < 3; i++) L_int(i, i) = std::max(d2.D(i, i), 1.0);
+        Tensor PtT  = P.transpose();
+        return P * L_int * PtT;      // 2 matmuls in return expression
     }
 
   private:
     enum Op { Log, Exponential, Root, Square };
     static Tensor metricTransform(const Tensor& m, Op op) {
-        auto decomp = MetricDecomposition::decompose(m);
+        auto decomp = MetricDecomposition::decomposeRobust(m);
         auto& D = decomp.D;
         auto& R = decomp.R;
         for (int i = 0; i < 3; i++) {

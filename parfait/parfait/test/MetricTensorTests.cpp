@@ -156,25 +156,14 @@ void forceSymmetry(DenseMatrix<double, 3, 3>& M) {
         for (int j = 0; j < i; j++) M(i, j) = M(j, i);
 }
 
-TEST_CASE("Aleuzet intersection") {
+TEST_CASE("Alauzet intersection") {
     Tensor M1 = MetricTensor::metricFromEllipse(2, 3, 4, 0.5, 1.2, 3.0);
     Tensor M2 = MetricTensor::metricFromEllipse(1, 1, 1, 0, 0, 0);
 
-    Tensor M1_inv = MetricTensor::invert(M1);
-    Tensor N = M1_inv * M2;
-    auto lambdas = MetricTensor::rayleighFormula(M1, N);
-
-    auto N_decomp = MetricDecomposition::decompose(N);
-    Tensor P = N_decomp.R;
-
-    Tensor reconstructed = P * lambdas * P.transpose();
-
-    double error = maxDifference(M1, reconstructed);
-    REQUIRE(error < 1.0e-10);
-
     auto intersection = MetricTensor::intersect(M1, M2);
 
-    error = maxDifference(M2, intersection);
+    // M2 (identity) is more restrictive than M1 (spacings 2,3,4), so intersection == M2.
+    double error = maxDifference(M2, intersection);
     REQUIRE(error < 1.0e-10);
 }
 
